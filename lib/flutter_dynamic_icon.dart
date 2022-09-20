@@ -22,7 +22,8 @@ class FlutterDynamicIcon {
     return altIconName;
   }
 
-  /// Sets [iconName] as the current icon for the app
+  /// Sets [iconName] as the current icon for the app.
+  /// Pass `null` to set the default icon.
   ///
   /// [iOS]: Use [showAlert] at your own risk as it uses a private/undocumented API to
   /// not show the icon change alert. By default, it shows the alert
@@ -42,6 +43,7 @@ class FlutterDynamicIcon {
   }
 
   /// Fetches the icon batch number
+  /// On Android there is no batch number, so the method will return 0
   ///
   /// The default value of this property is `0` (to show no batch)
   static Future<int> getApplicationIconBadgeNumber() async {

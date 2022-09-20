@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 
 import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 
@@ -11,28 +12,89 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey();
+  final TextEditingController controller = TextEditingController();
+
   int batchIconNumber = 0;
-
   String currentIconName = "?";
-
   bool loading = false;
   bool showAlert = true;
-
-  TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    FlutterDynamicIcon.getApplicationIconBadgeNumber().then((v) {
-      setState(() {
-        batchIconNumber = v;
+    try {
+      FlutterDynamicIcon.getApplicationIconBadgeNumber().then((v) {
+        setState(() {
+          batchIconNumber = v;
+        });
+      }).onError<PlatformException>((error, _) {
+        setState(() {
+          batchIconNumber = -1;
+        });
       });
-    });
+    } on PlatformException catch (e) {}
 
     FlutterDynamicIcon.getAlternateIconName().then((v) {
       setState(() {
         currentIconName = v ?? "`primary`";
       });
+    });
+  }
+
+  /// Changes the icon
+  Future<void> _changeIcon(String? iconName) async {
+    try {
+      // Check if the device supports alternative icons
+      bool supportAltIcons = await FlutterDynamicIcon.supportsAlternateIcons;
+      print(supportAltIcons);
+
+      if (supportAltIcons) {
+        // Make the icon swapping
+        await FlutterDynamicIcon.setAlternateIconName(iconName);
+
+        _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+        _scaffoldMessengerKey.currentState?.showSnackBar(
+            SnackBar(content: Text("App icon changed successful")));
+
+        // To confirm the swap try get the current icon name
+        String? newIconName = await FlutterDynamicIcon.getAlternateIconName();
+        setState(() {
+          currentIconName = newIconName ?? "`primary`";
+        });
+      }
+    } on PlatformException catch (e) {
+      _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+      _scaffoldMessengerKey.currentState
+          ?.showSnackBar(SnackBar(content: Text("Failed to change app icon")));
+      debugPrint(e.toString());
+    }
+  }
+
+  Future<void> _setBatchNumber(String val) async {
+    if (val.length == 0) {
+      return;
+    }
+
+    setState(() {
+      loading = true;
+    });
+    int batchNumber = int.parse(val);
+    try {
+      await FlutterDynamicIcon.setApplicationIconBadgeNumber(batchNumber);
+      batchIconNumber =
+          await FlutterDynamicIcon.getApplicationIconBadgeNumber();
+      _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(content: Text("Batch number changed successful")));
+    } on PlatformException catch (e) {
+      _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(content: Text("Failed to change batch number")));
+      debugPrint(e.toString());
+    }
+    setState(() {
+      loading = false;
     });
   }
 
