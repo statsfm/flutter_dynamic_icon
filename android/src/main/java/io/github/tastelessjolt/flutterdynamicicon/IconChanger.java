@@ -1,7 +1,9 @@
 package io.github.tastelessjolt.flutterdynamicicon;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -73,6 +75,15 @@ public class IconChanger {
         }
         for(ComponentName toDisable: componentsToDisable) {
             pm.setComponentEnabledSetting(toDisable, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        }
+
+        Activity activity = FlutterDynamicIconPlugin.getActivity();
+        if(activity != null) {
+            activity.finish();
+
+            Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         }
     }
 

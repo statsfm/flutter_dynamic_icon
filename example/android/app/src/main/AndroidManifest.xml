@@ -19,16 +19,30 @@
                 android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         
         <!-- Alternative icons configuration -->
         <activity-alias
+            android:name=".default"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:enabled="true"
+            android:exported="true"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".chills"
             android:icon="@mipmap/chills"
             android:label="Chills"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             <meta-data
                 android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
@@ -44,6 +58,7 @@
             android:icon="@mipmap/photos"
             android:label="Photos"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             <meta-data
                 android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
@@ -59,6 +74,7 @@
             android:icon="@mipmap/teamfortress"
             android:label="Teamfortress"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             <meta-data
                 android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"

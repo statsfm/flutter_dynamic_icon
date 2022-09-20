@@ -54,22 +54,7 @@ public class Helper {
     public static List<ComponentName> getComponentNames(Context context, String activityName) {
         String packageName = context.getPackageName();
         if (activityName == null) {
-            PackageManager pm = context.getPackageManager();
-            ArrayList<ComponentName> components = new ArrayList<ComponentName>();
-            try {
-                PackageInfo info = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES | PackageManager.GET_DISABLED_COMPONENTS);
-                ActivityInfo enabled = null;
-                for(ActivityInfo activityInfo: info.activities) {
-                    Log.d("IconChangerGetComps", activityInfo.name.toString());
-                    if(activityInfo.targetActivity == null) {
-                        components.add(new ComponentName(packageName, activityInfo.name));
-                    }
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                // the package isn't installed on the device
-                Log.d(TAG, "the package isn't installed on the device");
-            }
-            return components;
+            activityName = "default";
         }
 
         String componentName = String.format("%s.%s", packageName, activityName);

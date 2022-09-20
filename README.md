@@ -166,7 +166,8 @@ Next open your AndroidManifest.xml (placed in `android/src/main/AndroidManifest.
             
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+               <!-- This needs to be DEFAULT instead of LAUNCHER -->
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         
@@ -180,11 +181,25 @@ Next open your AndroidManifest.xml (placed in `android/src/main/AndroidManifest.
 			The `android:targetActivity` must be setted as "MainActivity"
 			If you have other intent-filter (for example sharing intent), you will have to paste the same value for all your alternative icons (and the default one)
 		-->
+        <!-- Default alias -->
+        <activity-alias
+                android:name=".default"
+                android:icon="@mipmap/ic_launcher"
+                android:label="@string/app_name"
+                android:enabled="true"
+                android:exported="true"
+                android:targetActivity=".MainActivity">
+           <intent-filter>
+              <action android:name="android.intent.action.MAIN" />
+              <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+        </activity-alias>
         <activity-alias
             android:name=".chills"
             android:icon="@mipmap/chills"
             android:label="Chills"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             
             <intent-filter>
@@ -198,6 +213,7 @@ Next open your AndroidManifest.xml (placed in `android/src/main/AndroidManifest.
             android:icon="@mipmap/photos"
             android:label="Photos"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             
             <intent-filter>
@@ -211,6 +227,7 @@ Next open your AndroidManifest.xml (placed in `android/src/main/AndroidManifest.
             android:icon="@mipmap/teamfortress"
             android:label="Teamfortress"
             android:enabled="false"
+            android:exported="true"
             android:targetActivity=".MainActivity">
             
             <intent-filter>

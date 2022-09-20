@@ -1,14 +1,21 @@
 package io.github.tastelessjolt.flutterdynamicicon;
 
+import android.app.Activity;
 import android.content.Context;
+
+import androidx.annotation.NonNull;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 
 /** FlutterDynamicIconPlugin */
-public class FlutterDynamicIconPlugin implements FlutterPlugin {
+public class FlutterDynamicIconPlugin implements FlutterPlugin, ActivityAware {
   private static final String CHANNEL_NAME = "flutter_dynamic_icon";
   private MethodChannel channel;
+  public static ActivityPluginBinding _activityBinding;
 
   @SuppressWarnings("deprecation")
   public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
@@ -22,8 +29,30 @@ public class FlutterDynamicIconPlugin implements FlutterPlugin {
   }
 
   @Override
-  public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding binding) {
+  public void onDetachedFromEngine(@NonNull FlutterPlugin.FlutterPluginBinding binding) {
     teardownChannel();
+  }
+
+  @Override
+  public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    _activityBinding = binding;
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
+    // This is called after the new activity is attached
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+    _activityBinding = binding;
+  }
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+  }
+
+  public static Activity getActivity() {
+    return (_activityBinding != null) ? _activityBinding.getActivity() : null;
   }
 
   private void setupChannel(BinaryMessenger messenger, Context context) {
@@ -35,5 +64,5 @@ public class FlutterDynamicIconPlugin implements FlutterPlugin {
   private void teardownChannel() {
     channel.setMethodCallHandler(null);
     channel = null;
-  }  
+  }
 }
