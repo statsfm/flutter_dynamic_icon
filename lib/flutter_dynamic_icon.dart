@@ -22,6 +22,20 @@ class FlutterDynamicIcon {
     return altIconName;
   }
 
+  /// Fetches the available alternate icon names
+  static Future<List<String>> getAvailableAlternateIconNames({List<String>? include}) async {
+    final names =
+        await _channel.invokeListMethod<String>('mGetAvailableAlternateIconNames', {'include': include});
+    return names ?? [];
+  }
+
+  /// Fetches the available alternate icons
+  static Future<Map<String, Uint8List?>> getAvailableAlternateIcons({List<String>? include}) async {
+    final icons =
+        await _channel.invokeMapMethod<String, Uint8List?>('mGetAvailableAlternateIcons', {'include': include});
+    return icons ?? {};
+  }
+
   /// Sets [iconName] as the current icon for the app.
   /// Pass `null` to set the default icon.
   ///

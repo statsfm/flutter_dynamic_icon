@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
 
 import io.flutter.Log;
 
@@ -29,30 +33,65 @@ public class IconChanger {
     //
     static private String TAG = "flutterdynamicicon";
 
-    public static ActivityInfo getCurrentEnabledAlias(Context context) {
+    public static String getCurrentEnabledAlias(Context context) {
         PackageManager pm = context.getPackageManager();
+
+        for(ActivityInfo alias: getAvailableAliases(context, null)) {
+            if(Helper.isComponentEnabled(pm, context.getPackageName(), alias.name)) {
+                return alias.name;
+            }
+        }
+        return null;
+    }
+
+    public static List<ActivityInfo> getAvailableAliases(Context context, List<String> include) {
+        PackageManager pm = context.getPackageManager();
+
+        List<ActivityInfo> aliases = new ArrayList<>();
 
         try {
             PackageInfo info = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_ACTIVITIES | PackageManager.GET_DISABLED_COMPONENTS);
-            ActivityInfo enabled = null;
             for(ActivityInfo activityInfo: info.activities) {
-                Log.d("IconChanger", activityInfo.name.toString());
                 // Only checks among the `activity-alias`s, for current enabled alias
                 if(activityInfo.targetActivity != null) {
-                    boolean isEnabled = Helper.isComponentEnabled(pm, context.getPackageName(), activityInfo.name);
-                    if(isEnabled) enabled = activityInfo;
+                    if(include == null || include.contains(Helper.getIconNameFromActivity(activityInfo.name))) {
+                        aliases.add(activityInfo);
+                    }
                 }
             }
-            return enabled;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
-            return null;
         }
+
+        return aliases;
+    }
+
+    public static List<String> getAvailableAliasNames(Context context, List<String> include) {
+        List<ActivityInfo> aliases = getAvailableAliases(context, include);
+        List<String> names = new ArrayList<>();
+        for(ActivityInfo activityInfo: aliases) {
+            names.add(Helper.getIconNameFromActivity(activityInfo.name));
+        }
+
+        return names;
+    }
+
+    public static Map<String, byte[]> getAvailableAliasIcons(Context context, List<String> include) {
+        PackageManager pm = context.getPackageManager();
+
+        List<ActivityInfo> aliases = getAvailableAliases(context, include);
+        Map<String, byte[]> map = new HashMap<>();
+        for(ActivityInfo activityInfo: aliases) {
+            Drawable icon = activityInfo.loadIcon(pm);
+            map.put(Helper.getIconNameFromActivity(activityInfo.name), Helper.drawableToByteArray(icon));
+        }
+
+        return map;
     }
 
     public static void enableIcon(Context context, String activityName) {
         PackageManager pm = context.getPackageManager();
-        ActivityInfo currentlyEnabledIcon = getCurrentEnabledAlias(context);
+        String currentlyEnabledIcon = getCurrentEnabledAlias(context);
 
         if (currentlyEnabledIcon == null && activityName == null) {
             // Currently enabled and request to enable activities are both the default activities
@@ -61,14 +100,14 @@ public class IconChanger {
 
         List<ComponentName> components = Helper.getComponentNames(context, activityName);
         for(ComponentName component: components) {
-            if(currentlyEnabledIcon != null && currentlyEnabledIcon.name.equals(component.getClassName())) return;
-            Log.d(TAG,String.format("Changing enabled activity-alias from %s to %s", currentlyEnabledIcon != null ? currentlyEnabledIcon.name : "default", component.getClassName()));
+            if(currentlyEnabledIcon != null && currentlyEnabledIcon.equals(component.getClassName())) return;
+            Log.d(TAG,String.format("Changing enabled activity-alias from %s to %s", currentlyEnabledIcon != null ? currentlyEnabledIcon : "default", component.getClassName()));
             pm.setComponentEnabledSetting(component, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         }
 
         List<ComponentName> componentsToDisable;
         if (currentlyEnabledIcon != null) {
-            componentsToDisable = Arrays.asList(new ComponentName(context.getPackageName(), currentlyEnabledIcon.name));
+            componentsToDisable = Arrays.asList(new ComponentName(context.getPackageName(), currentlyEnabledIcon));
         }
         else {
             componentsToDisable = Helper.getComponentNames(context, null);

@@ -6,7 +6,11 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +58,22 @@ public class Helper {
     public static List<ComponentName> getComponentNames(Context context, String activityName) {
         String packageName = context.getPackageName();
         if (activityName == null) {
-            activityName = "default";
+            PackageManager pm = context.getPackageManager();
+            ArrayList<ComponentName> components = new ArrayList<ComponentName>();
+            try {
+                PackageInfo info = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES | PackageManager.GET_DISABLED_COMPONENTS);
+                ActivityInfo enabled = null;
+                for(ActivityInfo activityInfo: info.activities) {
+                    Log.d("IconChangerGetComps", activityInfo.name.toString());
+                    if(activityInfo.targetActivity == null) {
+                        components.add(new ComponentName(packageName, activityInfo.name));
+                    }
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                // the package isn't installed on the device
+                Log.d(TAG, "the package isn't installed on the device");
+            }
+            return components;
         }
 
         String componentName = String.format("%s.%s", packageName, activityName);
@@ -66,6 +85,24 @@ public class Helper {
     public static String getIconNameFromActivity(String activity) {
         String[] arr = activity.split("\\.");
         return arr[arr.length-1];
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    public static byte[] drawableToByteArray(Drawable drawable) {
+        Bitmap bitmap = drawableToBitmap(drawable);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
     }
 
 }

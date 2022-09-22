@@ -14,8 +14,30 @@
                                         message:@"Not supported on iOS ver < 10.3"
                                         details:nil]);
             }
+        } else if ([@"mGetAvailableAlternateIconNames" isEqualToString:call.method]) {
+            if (@available(iOS 10.3, *)) {
+                NSArray *include = call.arguments[@"include"];
+                result([self getAvailableIconNames:include]);
+            } else {
+                result([FlutterError errorWithCode:@"UNAVAILABLE"
+                                        message:@"Not supported on iOS ver < 10.3"
+                                        details:nil]);
+            }
+        } else if ([@"mGetAvailableAlternateIcons" isEqualToString:call.method]) {
+            if (@available(iOS 10.3, *)) {
+                NSArray *include = call.arguments[@"include"];
+                result([self getAvailableIcons:include]);
+            } else {
+                result([FlutterError errorWithCode:@"UNAVAILABLE"
+                                        message:@"Not supported on iOS ver < 10.3"
+                                        details:nil]);
+            }
         } else if ([@"mGetAlternateIconName" isEqualToString:call.method]) {
             if (@available(iOS 10.3, *)) {
+                if(UIApplication.sharedApplication.alternateIconName == nil) {
+                    result(@"default");
+                    return;
+                }
                 result(UIApplication.sharedApplication.alternateIconName);
             } else {
                 result([FlutterError errorWithCode:@"UNAVAILABLE"
@@ -26,7 +48,7 @@
             if (@available(iOS 10.3, *)) {
                 @try {
                     NSString *iconName = call.arguments[@"iconName"];
-                    if (iconName == [NSNull null]) {
+                    if (iconName == [NSNull null] || [iconName isEqual: @"default"]) {
                         iconName = nil;
                     }
                     
@@ -125,5 +147,57 @@
     }];
 }
 
+
++ (NSMutableArray*)getAvailableIconNames:(NSArray*) include {
+    NSMutableArray* list = [[NSMutableArray alloc] init];
+    
+    NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"Info" ofType:@"plist"];
+    NSDictionary *plistData = [[NSDictionary alloc] initWithContentsOfFile:plistPath];
+    NSDictionary *CFBundleIcons = plistData[@"CFBundleIcons"];
+    NSDictionary *CFBundleAlternateIcons = CFBundleIcons[@"CFBundleAlternateIcons"];
+    
+    for(id key in CFBundleAlternateIcons) {
+        NSString* name = key;
+        if([name isEqual: @"CFBundlePrimaryIcon"]) {
+            name = @"default";
+        }
+        if(include == nil || [include containsObject:name]) {
+            [list addObject:name];
+        }
+    }
+    
+    return list;
+}
+
+
++ (NSMutableDictionary*)getAvailableIcons:(NSArray*) include {
+    NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"Info" ofType:@"plist"];
+    NSDictionary *plistData = [[NSDictionary alloc] initWithContentsOfFile:plistPath];
+    NSDictionary *CFBundleIcons = plistData[@"CFBundleIcons"];
+    NSDictionary *CFBundleAlternateIcons = CFBundleIcons[@"CFBundleAlternateIcons"];
+    
+    NSMutableDictionary* icons = [[NSMutableDictionary alloc] init];
+    
+    for(id key in CFBundleAlternateIcons) {
+        NSString* name = key;
+        if([name isEqual: @"CFBundlePrimaryIcon"]) {
+            name = @"default";
+        }
+        if(include == nil || [include containsObject:name]) {
+            NSDictionary *iconData = CFBundleAlternateIcons[key];
+            
+            NSArray* files = iconData[@"CFBundleIconFiles"];
+            UIImage* icon = [UIImage imageNamed:files[0]];
+            NSData* bytes = UIImagePNGRepresentation(icon);
+            if(bytes == nil) {
+                [icons setValue:[NSNull null] forKey:name];
+            } else {
+                [icons setValue:bytes forKey:name];
+            }
+        }
+    }
+    
+    return icons;
+}
 
 @end
