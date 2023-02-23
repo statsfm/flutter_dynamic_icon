@@ -45,12 +45,14 @@ class FlutterDynamicIcon {
   ///
   /// Throws a [PlatformException] with description if
   /// it can't find [iconName] or there's any other error
+  /// [toastMessage] is only supported on Android
   static Future setAlternateIconName(String? iconName,
-      {bool showAlert = true}) async {
+      {String? toastMessage, bool showAlert = true}) async {
     await _channel.invokeMethod(
       'mSetAlternateIconName',
       <String, dynamic>{
         'iconName': iconName,
+        'toastMessage': toastMessage,
         'showAlert': showAlert,
       },
     );

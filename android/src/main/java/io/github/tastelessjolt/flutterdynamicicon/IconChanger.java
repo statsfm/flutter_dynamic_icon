@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public class IconChanger {
         return map;
     }
 
-    public static void enableIcon(Context context, String activityName) {
+    public static void enableIcon(Context context, String activityName, String toastMessage) {
         PackageManager pm = context.getPackageManager();
         String currentlyEnabledIcon = getCurrentEnabledAlias(context);
 
@@ -114,6 +115,12 @@ public class IconChanger {
         }
         for(ComponentName toDisable: componentsToDisable) {
             pm.setComponentEnabledSetting(toDisable, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        }
+
+        if(toastMessage != null) {
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, toastMessage, duration);
+            toast.show();
         }
 
         Activity activity = FlutterDynamicIconPlugin.getActivity();
