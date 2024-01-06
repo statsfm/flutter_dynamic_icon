@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    namespace "flutter_dynamic_icon"
+    namespace "io.github.tastelessjolt.flutterdynamicicon"
     compileSdkVersion 34
 
     defaultConfig {
